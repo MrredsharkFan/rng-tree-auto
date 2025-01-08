@@ -157,6 +157,9 @@ var systemComponents = {
             <tr>
                 <td><button class="opt" onclick="toggleOpt('hideChallenges')">Completed Challenges: {{ player.hideChallenges?"HIDDEN":"SHOWN" }}</button></td>
             </tr> 
+			<tr>
+                <td><button class="opt" onclick="toggleOpt('changeDevSpeed')">Change Devspeed</button></td>
+            </tr> 
         </table>`
     },
 

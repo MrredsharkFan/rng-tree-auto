@@ -28,6 +28,7 @@ function createLayers() {
 				resource: (layerName+" points"),
 				baseResNum: baseResNum,
 				baseResName: baseResName,
+				autoUpgrade: true,
 				baseResource() { return ((this.baseResNum==0)?"points":(this.baseResName+" points")) },
 				baseAmount() { return (this.baseResNum==0?player.points:player[this.baseResName].points) },
 				type: layerType,
@@ -38,7 +39,7 @@ function createLayers() {
 					if (layers[resettingLayer].row > this.row) layerDataReset(this.name, keep)
 				},
 				startData() { return {
-					unlocked: false,
+					unlocked: true,
 					points: new Decimal(0),
 					best: new Decimal(0),
 					total: new Decimal(0),
@@ -53,11 +54,13 @@ function createLayers() {
 			
 			if (layerType=="normal") {
 				let gainExpFactor = (rand+1.5)/3
-				layerInfo.exponent = RNG_DATA.rowBaseExps[r].times(gainExpFactor);
-			} else if (layerType=="static") {
+				layerInfo.exponent = RNG_DATA.rowBaseExps[r].times(gainExpFactor)
+				layerInfo.passiveGeneration = true}
+		    else if (layerType=="static") {
 				let reqExpFactor = (rand+1.5)/3
 				layerInfo.base = layerInfo.requires.sqrt().div(5).plus(1);
 				layerInfo.exponent = RNG_DATA.staticRowBaseExps[r].times(reqExpFactor);
+				layerInfo.canBuyMax = true
 			}
 			
 			layerInfo.hasEffect = (r==1?true:(!(!Math.round(rand))))
@@ -159,8 +162,8 @@ function createLayers() {
 							canAfford() { return player[this.layer].points.gte(tmp[this.layer].buyables[this.id].cost) },
 							buy() { 
 								cost = tmp[this.layer].buyables[this.id].cost
+								player[this.layer].buyables[this.id] = player[this.layer].points.div(this.costStart).log(this.costBase)
 								player[this.layer].points = player[this.layer].points.sub(cost)	
-								player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
 								player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) 
 							},
 							costStart: (r>1&&id==11&&!hasUpgrades&&!layerInfo.hasEffect)?new Decimal(1):(Decimal.pow(2*(1-internalBblFactor)+1, (bRow-1)*layerInfo.buyables.cols+bCol).div(hasUpgrades?1:2)),
@@ -193,6 +196,7 @@ function createLayers() {
 					}
 				}
 			}
+
 			
 			addLayer(layerName, layerInfo)
 		}

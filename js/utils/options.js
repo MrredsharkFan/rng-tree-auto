@@ -8,6 +8,8 @@ function toggleOpt(name) {
 		changeTreeQuality();
 	if (name == "oldStyle")
 		updateStyle();
+	if (name == "changeDevSpeed")
+		changeDevSpeed();
 }
 var styleCooldown = 0;
 function updateStyle() {
@@ -49,4 +51,7 @@ function milestoneShown(layer, id) {
 			break;
 	}
 	return false;
+}
+function changeDevSpeed(){
+	player.devSpeed = prompt("Insert new devspeed here:")
 }
