@@ -19,21 +19,21 @@ const RNG_DATA = {
 		let l = Math.max(Math.min(Math.floor(random(getSeed()*row)*RNG_DATA.maxLayers+1), RNG_DATA.maxLayers), RNG_DATA.minLayers);
 		return Math.min(l, row);		
 	},
-	chars: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()'.split(''),
+	chars: 'ΑαΒβΓγΔδΕεΖζΗηΘθΙιΚκΛλΜμΝνΞξΟοΠπΡρΣσςΤτΥυΦφΧχΨψΩω'.split(''),
 	types: ["normal", "static"],
 	rowReqs: {
 		1: new Decimal(10),
-		2: new Decimal(1e6),
-		3: new Decimal(1e25),
-		4: new Decimal(1e80),
-		5: new Decimal(1e300),
+		2: new Decimal(16777216),
+		3: new Decimal.pow(2,128),
+		4: new Decimal.pow(2,512),
+		5: new Decimal.pow(2,1024),
 	},
 	rowBaseExps: {
 		1: new Decimal(0.5),
 		2: new Decimal(0.25),
-		3: new Decimal(0.01),
-		4: new Decimal(0.0025),
-		5: new Decimal(0.001),
+		3: new Decimal(0.125),
+		4: new Decimal(0.0625),
+		5: new Decimal(0.03125),
 	},
 	staticRowBaseExps: {
 		1: new Decimal(1),

@@ -12,11 +12,11 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1",
-	name: "Row 1",
+	num: "0.11",
+	name: "HOW TO GET A GOOD SEED???????/",
 }
 
-let changelog = `Haha no changelog sorri`
+let changelog = `<h1>v0.11</h1><br>changed something`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -38,7 +38,7 @@ function getPointGen() {
 	if(!canGenPoints())
 		return new Decimal(0)
 
-	let gain = new Decimal(1)
+	let gain = new Decimal(player.bestPoints).add(10).log(10)
 	gain = gain.times(globalEffect("NONE")).times(globalUpgEffect("NONE")).times(globalBuyableEffect("NONE"));
 	return gain
 }
@@ -49,8 +49,9 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
+
 var displayThings = [
-	function() { return "Seed: "+player.seed; },
+	function() { return "Seed: "+player.seed + "<br>Best points: " + format(new Decimal(player.bestPoints)) + "<br>which gives a <b>" + format(new Decimal(player.bestPoints).add(10).log(10)) + "</b>x to points"; },
 ]
 
 // Determines when the game "ends"

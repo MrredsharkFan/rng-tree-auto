@@ -15,7 +15,7 @@ function createLayers() {
 			if (baseResName=="") layerReq = RNG_DATA.rowReqs[r].times(rand+0.5)
 			else {
 				if (layers[baseResName].type=="static") layerReq = RNG_DATA.rowReqs[r].root(layers[baseResName].exponent).log(layers[baseResName].base).times(rand+0.5)
-				else layerReq = RNG_DATA.rowReqs[r].pow(layers[baseResName].exponent).times(rand+0.5).times(2)
+				else layerReq = RNG_DATA.rowReqs[r].pow(layers[baseResName].exponent)
 			}
 			layersForEffects[r].push(layerName);
 			
@@ -24,7 +24,7 @@ function createLayers() {
 				symbol: layerName,
 				position: (l-1),
 				color: ("#"+Math.floor(rand*16777215).toString(16)),
-				requires: layerReq,
+				requires: layerReq.pow(rand/12+1).times((rand+0.5)**((r*l)*3)+1),
 				resource: (layerName+" points"),
 				baseResNum: baseResNum,
 				baseResName: baseResName,
@@ -128,12 +128,12 @@ function createLayers() {
 								let amt;
 								if (this.sourceName == "NONE") amt = player.points;
 								else amt = player[this.sourceName].points;
-								eff = new Decimal(amt||0).max(0.5).plus(1)
+								eff = new Decimal(amt||0).plus(1)
 								if (this.sourceName!="NONE" ? tmp[this.sourceName].type=="static" : false) eff = Decimal.pow(tmp[this.sourceName].base, eff).pow(tmp[this.sourceName].exponent).pow(exp).pow(RNG_DATA.rowLayerTotalMultExps[tmp[this.layer].row].times(this.iuf))
 								else eff = eff.root((this.sourceName=="NONE")?1:tmp[this.sourceName].exponent).pow(exp).pow(RNG_DATA.rowLayerTotalMultExps[tmp[this.layer].row].times(this.iuf)) 
 								return eff;
 							},
-							effectDisplay() { return format(tmp[this.layer].upgrades[this.id].effect)+"x" },
+							effectDisplay() { return format(tmp[this.layer].upgrades[this.id].effect)+"x <br> Factor: " + format(this.iuf*layerInfo.upgrades.rows*layerInfo.upgrades.cols) },
 						}
 						uLeft = Math.max(uLeft-internalUpgFactor, 0);
 					}
@@ -162,7 +162,7 @@ function createLayers() {
 							canAfford() { return player[this.layer].points.gte(tmp[this.layer].buyables[this.id].cost) },
 							buy() { 
 								cost = tmp[this.layer].buyables[this.id].cost
-								player[this.layer].buyables[this.id] = player[this.layer].points.div(this.costStart).log(this.costBase)
+								player[this.layer].buyables[this.id] = player[this.layer].points.div(this.costStart).log(this.costBase).ceil()
 								player[this.layer].points = player[this.layer].points.sub(cost)	
 								player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) 
 							},
@@ -170,7 +170,8 @@ function createLayers() {
 							costBase: Decimal.pow(5, ((2-bblRand)/3)*internalBblFactor),
 							effDesc() {
 								let stat = (et=="NONE")?false:tmp[et].type=="static";
-								return (stat?("Divides "+(et=="NONE"?"point":(et+" point"))+" requirement"):("Multiplies "+(et=="NONE"?"point":(et+" point"))+" gain"))+" by "+format(tmp[this.layer].buyables[this.id].effect);
+								return (stat?("Divides "+(et=="NONE"?"point":(et+" point"))+" requirement"):("Multiplies "+(et=="NONE"?"point":(et+" point"))+" gain"))+" by "+format(tmp[this.layer].buyables[this.id].effect)
+								+"<br> Factor: " + format(internalBblFactor*layerInfo.overallFactor);
 							},
 							display() {
 								let data = tmp[this.layer].buyables[this.id];

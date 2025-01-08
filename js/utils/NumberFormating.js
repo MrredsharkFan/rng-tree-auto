@@ -1,15 +1,15 @@
 
 function exponentialFormat(num, precision, mantissa = true) {
-    let e = num.log10().floor()
-    let m = num.div(Decimal.pow(10, e))
-    if (m.toStringWithDecimalPlaces(precision) == 10) {
-        m = new Decimal(1)
-        e = e.add(1)
+    if (num.gte("1e1000000000")){
+        return "e" + exponentialFormat(num.log(10),precision,mantissa)
     }
-    e = (e.gte(10000) ? commaFormat(e, 0) : e.toStringWithDecimalPlaces(0))
-    if (mantissa)
-        return m.toStringWithDecimalPlaces(precision) + "e" + e
-    else return "e" + e
+    else if (num.gte("1e10000")){
+        return "e" + commaFormat(num.log(10).floor(),0)
+    }
+    else if (num.gte("1e9")){
+        return Decimal.pow(10,num.log(10).sub(num.log(10).floor())).toFixed(precision) + "e" + num.log(10).floor()
+    }
+    else {return commaFormat(num, precision)}
 }
 
 function commaFormat(num, precision) {
@@ -48,8 +48,6 @@ function format(decimal, precision = 4,) {
         if (slog.gte(1e6)) return "F" + format(slog.floor())
         else return Decimal.pow(10, slog.sub(slog.floor())).toStringWithDecimalPlaces(3) + "F" + commaFormat(slog.floor(), 0)
     }
-    else if (decimal.gte("1e100000")) return exponentialFormat(decimal, 0, false)
-    else if (decimal.gte("1e1000")) return exponentialFormat(decimal, 0)
     else if (decimal.gte(1e9)) return exponentialFormat(decimal, precision)
     else if (decimal.gte(1e3)) return commaFormat(decimal, 0)
     else return regularFormat(decimal, precision)
