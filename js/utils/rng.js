@@ -19,7 +19,7 @@ const RNG_DATA = {
 		let l = Math.max(Math.min(Math.floor(random(getSeed()*row)*RNG_DATA.maxLayers+1), RNG_DATA.maxLayers), RNG_DATA.minLayers);
 		return Math.min(l, row);		
 	},
-	chars: 'ΑαΒβΓγΔδΕεΖζΗηΘθΙιΚκΛλΜμΝνΞξΟοΠπΡρΣσςΤτΥυΦφΧχΨψΩω'.split(''),
+	chars: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
 	types: ["normal", "static"],
 	rowReqs: {
 		1: new Decimal(10),
@@ -101,4 +101,25 @@ function globalBuyableEffect(target) {
 		}
 	}
 	return eff;
+}
+
+function globalMilestoneCalc() {
+	for (let l in layers){
+		if (!tmp[l].milestones || tmp[l].row == 1) continue;
+		let et = tmp[l].branches
+		tmp[et].passiveGeneration = hasMilestone(l,0)
+		tmp[et].autoUpgrade = hasMilestone(l,1)
+	}
+}
+
+const RARITY_LIST = ["Worst","Worse","Bad","Belowground","Common","Uncommon","Rare","Epic","Legendary","Mythical","Divine","Super","Mega","Ultra","Omega","Extreme","Ultimate","Hyper","Godly","Unique","Exotic","Celestial","Paradoxial","Cosmic"]
+function rarity(rarity){
+	if (rarity > 2){return format(rarity,2)}
+	else{
+	let r1 = Math.min(Math.floor(-Math.log(1-rarity/2)*10),RARITY_LIST.length-1)
+	if (rarity < 0){
+		console.log("unexpected input of rarity of " + rarity)
+		return undefined
+	}
+	return "<i>"+RARITY_LIST[r1]+"</i> ("+format(rarity,2)+")"}
 }

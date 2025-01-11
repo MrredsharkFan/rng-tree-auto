@@ -7,7 +7,7 @@ function exponentialFormat(num, precision, mantissa = true) {
         return "e" + commaFormat(num.log(10).floor(),0)
     }
     else if (num.gte("1e9")){
-        return Decimal.pow(10,num.log(10).sub(num.log(10).floor())).toFixed(precision) + "e" + num.log(10).floor()
+        return Decimal.pow(10,num.log(10).sub(num.log(10).floor())).toFixed(new Decimal.sub(precision+2,num.log(10).log(10).floor()).max(0)) + "e" + num.log(10).floor()
     }
     else {return commaFormat(num, precision)}
 }
@@ -49,7 +49,7 @@ function format(decimal, precision = 4,) {
         else return Decimal.pow(10, slog.sub(slog.floor())).toStringWithDecimalPlaces(3) + "F" + commaFormat(slog.floor(), 0)
     }
     else if (decimal.gte(1e9)) return exponentialFormat(decimal, precision)
-    else if (decimal.gte(1e3)) return commaFormat(decimal, 0)
+    else if (decimal.gte(1e3)) return commaFormat(decimal, new Decimal.sub(precision+2,decimal.log(10).floor()).max(0))
     else return regularFormat(decimal, precision)
 }
 

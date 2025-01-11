@@ -23,12 +23,11 @@ function createLayers() {
 				name: layerName,
 				symbol: layerName,
 				position: (l-1),
-				color: ("#"+Math.floor(rand*16777215).toString(16)),
-				requires: layerReq.pow(rand/12+1).times((rand+0.5)**((r*l)*3)+1),
+				color: ("#"+Math.floor(rand*2**24).toString(16)),
+				requires: layerReq.pow(rand/12+1).times(r==1||rand>0.5?1:(rand+0.5)**((r*l)*3)+1),
 				resource: (layerName+" points"),
 				baseResNum: baseResNum,
 				baseResName: baseResName,
-				autoUpgrade: true,
 				baseResource() { return ((this.baseResNum==0)?"points":(this.baseResName+" points")) },
 				baseAmount() { return (this.baseResNum==0?player.points:player[this.baseResName].points) },
 				type: layerType,
@@ -54,13 +53,11 @@ function createLayers() {
 			
 			if (layerType=="normal") {
 				let gainExpFactor = (rand+1.5)/3
-				layerInfo.exponent = RNG_DATA.rowBaseExps[r].times(gainExpFactor)
-				layerInfo.passiveGeneration = true}
+				layerInfo.exponent = RNG_DATA.rowBaseExps[r].times(gainExpFactor)}
 		    else if (layerType=="static") {
 				let reqExpFactor = (rand+1.5)/3
 				layerInfo.base = layerInfo.requires.sqrt().div(5).plus(1);
 				layerInfo.exponent = RNG_DATA.staticRowBaseExps[r].times(reqExpFactor);
-				layerInfo.canBuyMax = true
 			}
 			
 			layerInfo.hasEffect = (r==1?true:(!(!Math.round(rand))))
@@ -112,7 +109,7 @@ function createLayers() {
 						let sourceName = (sourceID==0?"NONE":layersForEffects[sourceID][Math.floor(upgRand*layersForEffects[sourceID].length)]);
 						let isFinal = (upgRow == layerInfo.upgrades.rows) && (upgCol == layerInfo.upgrades.cols);
 						let internalUpgFactor = isFinal?uLeft:(upgRand/(layerInfo.upgrades.rows*layerInfo.upgrades.cols));
-						layerInfo.upgrades[id] = {
+						if (internalUpgFactor!=0){layerInfo.upgrades[id] = {
 							unlocked() { return player[this.layer].unlocked },
 							et: et,
 							sourceName: sourceName,
@@ -133,11 +130,12 @@ function createLayers() {
 								else eff = eff.root((this.sourceName=="NONE")?1:tmp[this.sourceName].exponent).pow(exp).pow(RNG_DATA.rowLayerTotalMultExps[tmp[this.layer].row].times(this.iuf)) 
 								return eff;
 							},
-							effectDisplay() { return format(tmp[this.layer].upgrades[this.id].effect)+"x <br> Factor: " + format(this.iuf*layerInfo.upgrades.rows*layerInfo.upgrades.cols) },
+							effectDisplay() { return format(tmp[this.layer].upgrades[this.id].effect)+"x <br> Tier: " + rarity(this.iuf*layerInfo.upgrades.rows*layerInfo.upgrades.cols/layerInfo.overallFactor) },
 						}
 						uLeft = Math.max(uLeft-internalUpgFactor, 0);
-					}
 				}
+			}
+		}
 			}
 			
 			if (hasBuyables) {
@@ -158,7 +156,7 @@ function createLayers() {
 							iuf: internalBblFactor*layerInfo.overallFactor,
 							layer: layerInfo.name,
 							title: layerInfo.name+String(id)+"b",
-							unlocked() { return player[this.layer].unlocked }, 
+							unlocked() { return internalBblFactor*layerInfo.overallFactor==0?false:player[this.layer].unlocked }, 
 							canAfford() { return player[this.layer].points.gte(tmp[this.layer].buyables[this.id].cost) },
 							buy() { 
 								cost = tmp[this.layer].buyables[this.id].cost
@@ -171,8 +169,8 @@ function createLayers() {
 							effDesc() {
 								let stat = (et=="NONE")?false:tmp[et].type=="static";
 								return (stat?("Divides "+(et=="NONE"?"point":(et+" point"))+" requirement"):("Multiplies "+(et=="NONE"?"point":(et+" point"))+" gain"))+" by "+format(tmp[this.layer].buyables[this.id].effect)
-								+"<br> Factor: " + format(internalBblFactor*layerInfo.overallFactor);
-							},
+									+"<br> Rarity: " + rarity(internalBblFactor/layerInfo.overallFactor);
+								},
 							display() {
 								let data = tmp[this.layer].buyables[this.id];
 								return "Cost: "+formatWhole(data.cost)+" "+tmp[this.layer].symbol+" points\n\
@@ -190,15 +188,26 @@ function createLayers() {
 								else exp = tmp[this.et].exponent;
 								let bought = player[this.layer].buyables[this.id];
 								eff = layers[this.layer].buyables[this.id].cost(bought.sub(1)).times(bought.gte(1)?bought.min(5):0).plus(bought.gte(1)?0:1).root(tmp[this.layer].exponent).pow(exp).pow(RNG_DATA.rowLayerTotalMultExps[tmp[this.layer].row].times(this.iuf))
+								if (layerType=="static"){eff = new Decimal.pow(this.iuf*r+1,eff.add(bought)).max(1).div(this.iuf*r+1)};
 								return eff;
 							},
+							
 						}
 						uLeft = Math.max(uLeft-internalBblFactor, 0);
 					}
 				}
 			}
-
-			
+			layerInfo.milestones = {}
+			if (r != 1){
+				layerInfo.milestones[0] = ({requirementDescription: function(){return format(layerInfo.type=="static"?rand*2+1:rand*10+5,1)+" "+layerName},
+					done() {return player[this.layer].points.gte(layerInfo.type=="static"?rand*2+1:rand*10+5)}, 
+					effectDescription: "Get 100% of " + layerInfo.branches + "/s",
+				})
+				layerInfo.milestones[1] = ({requirementDescription: function(){return format(layerInfo.type=="static"?rand*6+2.5:(rand**2)*10+rand*10+10,1)+" "+layerName},
+					done() {return player[this.layer].points.gte(layerInfo.type=="static"?rand*2+1:rand*10+5)}, 
+					effectDescription: layerInfo.branches + " has their upgrades autobought",
+				})
+			}
 			addLayer(layerName, layerInfo)
 		}
 	}
